@@ -1,0 +1,98 @@
+<div class="dynamic-layout-container">
+    <form [formGroup]="form">
+        <div class="row">
+            <ng-container *ngFor="let field of formFields">
+
+                <ng-container [ngSwitch]="field.type">
+
+
+                    <!-- Section -->
+                    <div *ngSwitchCase="'section'"
+                        class="card-title col-md-{{(field.column && field.column > 0 && field.column <= 4) ? (field.column * 3) : 12}}">
+                        <p class="section-header tuncate-text" #sectionHeading matTooltip={{field.name}}
+                            [matTooltipDisabled]="isTooltipDisabled(sectionHeading)">
+                            <i *ngIf="field.icon" class="fas {{field.icon}} mr10"></i>{{field.name}}
+                        </p>
+                        <app-dynamic-layout [form]="form" [formFields]="field.fields"
+                            [fieldOptions]="fieldOptions"></app-dynamic-layout>
+                    </div>
+
+                    <ng-container *ngSwitchDefault>
+                        <!-- Inputs starts here -->
+                        <div [ngSwitch]="field.dataType.toLowerCase()"
+                            class="col-md-{{(field.column && field.column > 0 && field.column <= 4) ? (field.column * 3) : 12}}">
+                            <!-- Textbox -->
+                            <mat-form-field *ngSwitchDefault class="input-form-field input-flds field-pb-0">
+                                <mat-label>{{field.label}}</mat-label>
+                                <input matInput [formControlName]="field.fieldName" [required]="field.required"
+                                    [id]="field.fieldName">
+                                <mat-error>{{field.label}} is required.</mat-error>
+                            </mat-form-field>
+
+                            <!-- Numeric -->
+                            <mat-form-field *ngSwitchCase="'numeric'" class="input-form-field input-flds field-pb-0">
+                                <mat-label>{{field.label}}</mat-label>
+                                <input matInput type="number" [formControlName]="field.fieldName" [id]="field.fieldName"
+                                    onkeypress="return event.charCode >= 46 || (event.charCode >= 48 && event.charCode <= 57)"
+                                    [required]="field.required">
+                                <mat-error
+                                    *ngIf="form.get(field.fieldName)?.hasError('required') && form.get(field.fieldName)?.touched">{{field.label}}
+                                    is required.</mat-error>
+                                <mat-error *ngIf="form.get(field.fieldName)?.hasError('pattern')">
+                                    <ng-container *ngIf="field.scale > 0">
+                                        The value can only have up to {{field.scale}} decimal places.
+                                    </ng-container>
+                                    <ng-container *ngIf="!field.scale">
+                                        The value must be an integer.
+                                    </ng-container>
+                                </mat-error>
+                            </mat-form-field>
+
+                            <!-- Date -->
+                            <mat-form-field *ngSwitchCase="'datetime'" class="input-form-field input-flds field-pb-0">
+                                <mat-label>{{field.label}}</mat-label>
+                                <input matInput [formControlName]="field.fieldName" [matDatepicker]="picker"
+                                    [id]="field.fieldName" [required]="field.required" placeholder="MM/DD/YYYY">
+                                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                                <mat-error>{{field.label}} is required.</mat-error>
+                            </mat-form-field>
+
+                            <!-- Dropdown -->
+                            <mat-form-field *ngSwitchCase="'guid'" class="input-form-field input-flds field-pb-0">
+                                <mat-label>{{field.label}}</mat-label>
+                                <mat-select [formControlName]="field.fieldName" [required]="field.required"
+                                    [id]="field.fieldName">
+                                    <mat-option [value]="null">Select</mat-option>
+                                    <mat-option *ngFor="let option of fieldOptions[field.fieldName]"
+                                        [value]="option.value">{{ option.text }}</mat-option>
+                                </mat-select>
+                                <mat-error>{{field.label}} is required.</mat-error>
+                            </mat-form-field>
+
+                            <!-- Checkbox -->
+                            <div *ngSwitchCase="'boolean'" class="input-form-field mat-mdc-form-field">
+                                <div class="mdc-text-field">
+                                    <mat-checkbox class="mat-check-box-field" [id]="field.fieldName"
+                                        [formControlName]="field.fieldName">{{field.label}}</mat-checkbox>
+                                </div>
+                            </div>
+
+                            <!-- Radio -->
+                            <div *ngSwitchCase="'radio'" class="form-group row-item-half">
+                                <mat-label>{{field.label}}</mat-label>
+                                <mat-radio-group name="field.fieldName" [formControlName]="field.fieldName"
+                                    [attr.required]="field.required">
+                                    <mat-radio-button *ngFor="let option of fieldOptions[field.fieldName]"
+                                        [value]="option.value">{{ option.text }}</mat-radio-button>
+                                </mat-radio-group>
+                            </div>
+                        </div>
+                        <!-- Inputs ends here -->
+                    </ng-container>
+
+                </ng-container>
+            </ng-container>
+        </div>
+    </form>
+</div>
